@@ -15,6 +15,17 @@ import {
 import { makeStyles } from "@material-ui/core/styles"
 import DeleteIcon from "@material-ui/icons/Delete"
 import AddIcon from "@material-ui/icons/Add"
+import { gql, useMutation, useQuery } from "@apollo/client"
+
+const GET_TODOS = gql`
+  {
+    todos {
+      id
+      title
+      done
+    }
+  }
+`
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -33,6 +44,8 @@ const useStyles = makeStyles(theme => ({
 export default function Home() {
   const classes = useStyles()
   const [checked, setChecked] = React.useState([0])
+  const { data, loading } = useQuery(GET_TODOS)
+  console.log(data)
 
   const handleToggle = value => () => {
     const currentIndex = checked.indexOf(value)

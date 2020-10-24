@@ -13,13 +13,17 @@ async function run() {
     //   })
     // );
 
+    // const results = await client.query(
+    //   q.Create(q.Collection("todos"), {
+    //     data: {
+    //       title: "Whatever",
+    //       done: false,
+    //     },
+    //   })
+    // )
+
     const results = await client.query(
-      q.Create(q.Collection("todos"), {
-        data: {
-          title: "Whatever",
-          done: false,
-        },
-      })
+      q.Get(q.Ref(q.Collection("todos"), "1603559160518000"))
     )
 
     // const results = await client.query(
@@ -29,7 +33,7 @@ async function run() {
     //   )
     // )
 
-    console.log(results.data)
+    console.log(results)
   } catch (error) {
     console.log(error)
   }

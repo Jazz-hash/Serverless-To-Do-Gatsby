@@ -1,4 +1,4 @@
-import React from "react"
+import React, { useState } from "react"
 import {
   Container,
   TextField,
@@ -17,8 +17,24 @@ import DeleteIcon from "@material-ui/icons/Delete"
 import AddIcon from "@material-ui/icons/Add"
 import { gql, useMutation, useQuery } from "@apollo/client"
 
+const ADD_TODO = gql`
+  mutation AddTodo($title: String!) {
+    addTodo(title: $title) {
+      id
+    }
+  }
+`
+
+const DELETE_TODO = gql`
+  mutation deleteTodo($id: String!) {
+    deleteTodo(id: $id) {
+      id
+    }
+  }
+`
+
 const GET_TODOS = gql`
-  {
+  query GetTodos {
     todos {
       id
       title
@@ -44,8 +60,18 @@ const useStyles = makeStyles(theme => ({
 export default function Home() {
   const classes = useStyles()
   const [checked, setChecked] = React.useState([0])
-  const { data, loading } = useQuery(GET_TODOS)
-  console.log(data)
+  const { data, loading, error, refetch } = useQuery(GET_TODOS)
+  const [addTodo] = useMutation(ADD_TODO)
+  const [deleteTodo] = useMutation(DELETE_TODO)
+
+  const [todoText, setTodoText] = useState("")
+
+  const addTodoFunc = todo => {
+    addTodo({
+      variables: { title: todo },
+    })
+    refetch()
+  }
 
   const handleToggle = value => () => {
     const currentIndex = checked.indexOf(value)
@@ -68,46 +94,65 @@ export default function Home() {
           id="outlined-basic"
           label="Add Todo"
           variant="outlined"
+          onChange={e => setTodoText(e.target.value)}
         />
         <Button
           style={{ width: "5%", height: "56px" }}
           variant="contained"
           color="secondary"
+          onClick={() => {
+            addTodoFunc(todoText)
+          }}
         >
           <AddIcon />
         </Button>
       </Box>
-      <List className={classes.root}>
-        {[0, 1, 2, 3].map(value => {
-          const labelId = `checkbox-list-label-${value}`
-
-          return (
+      {loading ? <div>loading...</div> : null}
+      {error ? <div>{error.message}</div> : null}
+      {!loading && !error && (
+        <List className={classes.root}>
+          {data.todos.map(todo => (
             <ListItem
-              key={value}
+              key={todo.id}
               role={undefined}
               dense
               button
-              onClick={handleToggle(value)}
+              // onClick={async () => {
+              //     console.log("updateTodoDone")
+              //     await updateTodoDone({ variables: { id: todo.id } })
+              //     console.log("refetching")
+              //     await refetch()
+              //   }}
             >
               <ListItemIcon>
                 <Checkbox
                   edge="start"
-                  checked={checked.indexOf(value) !== -1}
+                  checked={todo.done}
                   tabIndex={-1}
                   disableRipple
-                  inputProps={{ "aria-labelledby": labelId }}
                 />
               </ListItemIcon>
-              <ListItemText id={labelId} primary={`Line item ${value + 1}`} />
+              <ListItemText id={todo.id} primary={`${todo.title}`} />
               <ListItemSecondaryAction>
-                <IconButton edge="end" aria-label="comments">
+                <IconButton
+                  edge="end"
+                  aria-label="comments"
+                  onClick={() => {
+                    console.log("clicked")
+                    deleteTodo({
+                      variables: { id: todo.id },
+                      refetchQueries: [{ query: GET_TODOS }],
+                    })
+                    refetch()
+                  }}
+                >
                   <DeleteIcon />
                 </IconButton>
               </ListItemSecondaryAction>
             </ListItem>
-          )
-        })}
-      </List>
+          ))}
+        </List>
+      )}
     </Container>
   )
 }

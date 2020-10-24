@@ -15,6 +15,7 @@ const typeDefs = gql`
   }
   type Mutation {
     addTodo(title: String): Todo
+    deleteTodo(id: String): String
   }
 `
 
@@ -28,7 +29,7 @@ const resolvers = {
         )
       )
       return results.data.map(todo => ({
-        id: todo.ts,
+        id: todo.ref.id,
         title: todo.data.title,
         done: todo.data.done,
       }))
@@ -48,6 +49,12 @@ const resolvers = {
         ...results.data,
         id: results.data.ts,
       }
+    },
+    deleteTodo: async (_, { id }) => {
+      const results = await client.query(
+        q.Delete(q.Ref(q.Collection("todos"), `${id}`))
+      )
+      return results.ref.id,
     },
   },
 }

@@ -27,9 +27,12 @@ const ADD_TODO = gql`
 
 const DELETE_TODO = gql`
   mutation deleteTodo($id: String!) {
-    deleteTodo(id: $id) {
-      id
-    }
+    deleteTodo(id: $id)
+  }
+`
+const UPDATE_TODO = gql`
+  mutation updateTodo($id: String!, $done: Boolean!) {
+    updateTodo(id: $id, done: $done)
   }
 `
 
@@ -59,10 +62,11 @@ const useStyles = makeStyles(theme => ({
 
 export default function Home() {
   const classes = useStyles()
-  const [checked, setChecked] = React.useState([0])
+  const [checked, setChecked] = React.useState(false)
   const { data, loading, error, refetch } = useQuery(GET_TODOS)
   const [addTodo] = useMutation(ADD_TODO)
   const [deleteTodo] = useMutation(DELETE_TODO)
+  const [updateTodo] = useMutation(UPDATE_TODO)
 
   const [todoText, setTodoText] = useState("")
 
@@ -73,18 +77,25 @@ export default function Home() {
     refetch()
   }
 
-  const handleToggle = value => () => {
-    const currentIndex = checked.indexOf(value)
-    const newChecked = [...checked]
-
-    if (currentIndex === -1) {
-      newChecked.push(value)
-    } else {
-      newChecked.splice(currentIndex, 1)
-    }
-
-    setChecked(newChecked)
+  const updateTodoFunc = (id, done) => {
+    updateTodo({
+      variables: { id: id, done: done },
+    })
+    refetch()
   }
+
+  // const handleToggle = value => () => {
+  //   const currentIndex = checked.indexOf(value)
+  //   const newChecked = [...checked]
+
+  //   if (currentIndex === -1) {
+  //     newChecked.push(value)
+  //   } else {
+  //     newChecked.splice(currentIndex, 1)
+  //   }
+
+  //   setChecked(newChecked)
+  // }
 
   return (
     <Container className={classes.page}>
@@ -117,12 +128,12 @@ export default function Home() {
               role={undefined}
               dense
               button
-              // onClick={async () => {
-              //     console.log("updateTodoDone")
-              //     await updateTodoDone({ variables: { id: todo.id } })
-              //     console.log("refetching")
-              //     await refetch()
-              //   }}
+              onClick={() => {
+                console.log("updateTodoDone")
+                updateTodoFunc(todo.id, todo.done)
+                setChecked(!todo.done)
+                console.log("refetching")
+              }}
             >
               <ListItemIcon>
                 <Checkbox
@@ -138,10 +149,8 @@ export default function Home() {
                   edge="end"
                   aria-label="comments"
                   onClick={() => {
-                    console.log("clicked")
                     deleteTodo({
                       variables: { id: todo.id },
-                      refetchQueries: [{ query: GET_TODOS }],
                     })
                     refetch()
                   }}

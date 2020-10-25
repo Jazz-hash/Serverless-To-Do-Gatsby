@@ -1,17 +1,19 @@
+const { FlashOffOutlined } = require("@material-ui/icons")
 const faunadb = require("faunadb")
 const q = faunadb.query
 
 var client = new faunadb.Client({ secret: process.env.FAUNA })
 
 async function run() {
+  const done = false
   try {
-    // const results = await client.query(
-    //   q.Update(q.Ref(q.Collection("todos"), "280170789352768005"), {
-    //     data: {
-    //       done: true,
-    //     },
-    //   })
-    // );
+    const results = await client.query(
+      q.Update(q.Ref(q.Collection("todos"), "280294216380187137"), {
+        data: {
+          done,
+        },
+      })
+    )
 
     // const results = await client.query(
     //   q.Create(q.Collection("todos"), {
@@ -22,9 +24,9 @@ async function run() {
     //   })
     // )
 
-    const results = await client.query(
-      q.Get(q.Ref(q.Collection("todos"), "1603559160518000"))
-    )
+    // const results = await client.query(
+    //   q.Get(q.Ref(q.Collection("todos"), "1603559160518000"))
+    // )
 
     // const results = await client.query(
     //   q.Map(

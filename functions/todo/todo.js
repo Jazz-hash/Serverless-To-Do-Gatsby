@@ -16,6 +16,7 @@ const typeDefs = gql`
   type Mutation {
     addTodo(title: String): Todo
     deleteTodo(id: String): String
+    updateTodo(id: String, done: Boolean): String
   }
 `
 
@@ -54,7 +55,17 @@ const resolvers = {
       const results = await client.query(
         q.Delete(q.Ref(q.Collection("todos"), `${id}`))
       )
-      return results.ref.id,
+      return results.ref.id
+    },
+    updateTodo: async (_, { id, done }) => {
+      const results = await client.query(
+        q.Update(q.Ref(q.Collection("todos"), `${id}`), {
+          data: {
+            done: !done,
+          },
+        })
+      )
+      return results.ref.id
     },
   },
 }

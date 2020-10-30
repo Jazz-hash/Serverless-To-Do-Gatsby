@@ -1,22 +1,11 @@
 import React, { useState } from "react"
-import {
-  Container,
-  TextField,
-  List,
-  ListItem,
-  ListItemIcon,
-  ListItemText,
-  Checkbox,
-  ListItemSecondaryAction,
-  IconButton,
-  Button,
-  Box,
-} from "@material-ui/core"
+import { Container, TextField, List, Button, Box } from "@material-ui/core"
 import { makeStyles } from "@material-ui/core/styles"
-import DeleteIcon from "@material-ui/icons/Delete"
 import AddIcon from "@material-ui/icons/Add"
 import { gql, useMutation, useQuery } from "@apollo/client"
 import Todo from "../components/Todo"
+import Header from "../components/Header"
+import "./index.css"
 
 const ADD_TODO = gql`
   mutation AddTodo($title: String!) {
@@ -52,49 +41,59 @@ const useStyles = makeStyles(theme => ({
 
 export default function Home() {
   const classes = useStyles()
-  const [checked, setChecked] = React.useState(false)
   const { data, loading, error, refetch } = useQuery(GET_TODOS)
   const [addTodo] = useMutation(ADD_TODO)
 
   const [todoText, setTodoText] = useState("")
 
   const addTodoFunc = todo => {
-    addTodo({
-      variables: { title: todo },
-    })
-    refetch()
+    if (todo !== "") {
+      addTodo({
+        variables: { title: todo },
+      })
+      setTodoText("")
+      refetch()
+    } else {
+      alert("Please fill in the required fields !!")
+    }
   }
 
   return (
-    <Container className={classes.page}>
-      <Box>
-        <TextField
-          style={{ width: "90%", marginRight: "4px" }}
-          id="outlined-basic"
-          label="Add Todo"
-          variant="outlined"
-          onChange={e => setTodoText(e.target.value)}
-        />
-        <Button
-          style={{ width: "5%", height: "56px" }}
-          variant="contained"
-          color="secondary"
-          onClick={() => {
-            addTodoFunc(todoText)
-          }}
-        >
-          <AddIcon />
-        </Button>
-      </Box>
-      {loading ? <div>loading...</div> : null}
-      {error ? <div>{error.message}</div> : null}
-      {!loading && !error && (
-        <List className={classes.root}>
-          {data.todos.map(todo => (
-            <Todo todo={todo} />
-          ))}
-        </List>
-      )}
-    </Container>
+    <>
+      <Header />
+      <Container className={classes.page}>
+        <Box>
+          <TextField
+            style={{ width: "90%", marginRight: "4px" }}
+            id="outlined-basic"
+            label="Add Todo"
+            variant="outlined"
+            required={true}
+            color="secondary"
+            value={todoText}
+            onChange={e => setTodoText(e.target.value)}
+          />
+          <Button
+            style={{ width: "5%", height: "56px" }}
+            variant="contained"
+            color="secondary"
+            onClick={() => {
+              addTodoFunc(todoText)
+            }}
+          >
+            <AddIcon />
+          </Button>
+        </Box>
+        {loading ? <div>loading...</div> : null}
+        {error ? <div>{error.message}</div> : null}
+        {!loading && !error && (
+          <List className={classes.root}>
+            {data.todos.map(todo => (
+              <Todo todo={todo} />
+            ))}
+          </List>
+        )}
+      </Container>
+    </>
   )
 }

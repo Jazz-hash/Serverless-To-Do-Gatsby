@@ -32,7 +32,6 @@ const useStyles = makeStyles(theme => ({
     backgroundColor: theme.palette.background.paper,
   },
   page: {
-    width: "1024px",
     margin: "50px auto 0px",
     display: "flex",
     flexDirection: "column",
@@ -62,9 +61,15 @@ export default function Home() {
     <>
       <Header />
       <Container className={classes.page}>
-        <Box>
+        <Box
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
           <TextField
-            style={{ width: "90%", marginRight: "4px" }}
+            style={{ width: "80%", marginRight: "4px" }}
             id="outlined-basic"
             label="Add Todo"
             variant="outlined"
